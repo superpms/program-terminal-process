@@ -34,7 +34,7 @@ class TerminalCommandProcessMonitorService extends ServiceApp
         $myPid = getmypid();
         $logPath = Path::getRuntime('/terminal/log');
         dir_create($logPath);
-        call_php_script($root, "php pms terminal-process-monitor {$myPid} {$taskUUID} {$keepAliveInterval}", "{$logPath}/{$myPid}.monitor.pid");
+        call_php_script($root, "php pms terminal-process-monitor {$myPid} {$taskUUID} {$keepAliveInterval}", "{$logPath}/{$myPid}.$taskUUID.monitor.pid");
     }
 
 }
