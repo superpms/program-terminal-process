@@ -1,0 +1,28 @@
+{
+    "name": "superpms/program-terminal-process",
+    "description": "pms redis program",
+    "license": "Apache-2.0",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "files": [
+            "bin/autoload.php"
+        ],
+        "psr-4": {
+            "pms\\": "src/pms/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Guest",
+            "email": "kid666@88.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {
+        "superpms/interpreter-terminal": "^1.0.0",
+        "superpms/program-redis": "^1.0.0"
+    }
+}
