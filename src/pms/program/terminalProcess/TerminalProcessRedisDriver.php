@@ -1,11 +1,11 @@
 <?php
 
-namespace pms\program\terminalProcess\driver;
+namespace pms\program\terminalProcess;
 
 use pms\facade\RDb;
-use pms\program\terminalProcess\TerminalProcess;
+use pms\module\TerminalProcessDriverModule;
 
-class ProcessRedisDriver extends ProcessDriver
+class TerminalProcessRedisDriver extends TerminalProcessDriverModule
 {
     const space = 'process:list:';
 
@@ -32,7 +32,7 @@ class ProcessRedisDriver extends ProcessDriver
             /**
              * 还原进程容器
              */
-            $process = TerminalProcess::restore(json_decode($tmp, true));
+            $process = TerminalProcessRedisModule::restore(json_decode($tmp, true));
             $key = $process->service_name;
             if (!isset($info[$key])) {
                 $info[$key] = [];
