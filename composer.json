@@ -1,6 +1,6 @@
 {
     "name": "superpms/program-terminal-process",
-    "description": "pms redis program",
+    "description": "pms terminal-process program",
     "license": "Apache-2.0",
     "minimum-stability": "dev",
     "prefer-stable": true,
