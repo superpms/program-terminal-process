@@ -2,9 +2,11 @@
 
 namespace pms\service;
 
+use Exception;
 use pms\annotate\TerminalCommandProcessMonitor;
 use pms\app\ServiceApp;
 use pms\facade\Path;
+use pms\hook\TerminalLifecycleHook;
 use ReflectionAttribute;
 use ReflectionClass;
 
@@ -12,10 +14,10 @@ class TerminalCommandProcessMonitorService extends ServiceApp
 {
     public static string $lifecycle = LIFECYCLE_SANDBOX_BOOTED;
 
-    public static string $hookClass = \pms\hook\TerminalLifecycleHook::class;
+    public static string $hookClass = TerminalLifecycleHook::class;
 
-    public static function start($commandName, $argv, $bootOptions, $commandLIst, ReflectionClass $class, $obj)
-    {
+    public static function entry($commandName, $argv, $bootOptions, $commandLIst, ReflectionClass $class, $obj): void
+	{
         $needOutsideProcessMonitor = annotate_attrs($class, TerminalCommandProcessMonitor::class, true);
         if (!empty($needOutsideProcessMonitor)) {
             static::needOutsideProcessMonitor($needOutsideProcessMonitor, $class);
@@ -26,7 +28,7 @@ class TerminalCommandProcessMonitorService extends ServiceApp
     {
         $arg = $attribute->getArguments();
         if (count($arg) < 2) {
-            throw new \Exception("TerminalCommandProcessMonitor 注解 参数错误");
+            throw new Exception("TerminalCommandProcessMonitor 注解 参数错误");
         }
         $taskUUID = $arg[0];
         $keepAliveInterval = $arg[1];
