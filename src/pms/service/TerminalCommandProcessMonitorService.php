@@ -18,7 +18,7 @@ class TerminalCommandProcessMonitorService extends ServiceApp
 
     public static function entry($commandName, $argv, $bootOptions, $commandLIst, ReflectionClass $class, $obj): void
 	{
-        $needOutsideProcessMonitor = annotate_attrs($class, TerminalCommandProcessMonitor::class, true);
+        $needOutsideProcessMonitor = class_annotate_attrs($class, TerminalCommandProcessMonitor::class, true);
         if (!empty($needOutsideProcessMonitor)) {
             static::needOutsideProcessMonitor($needOutsideProcessMonitor, $class);
         }
