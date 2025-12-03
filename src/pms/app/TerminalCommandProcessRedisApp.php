@@ -8,7 +8,7 @@ use pms\program\terminalProcess\TerminalProcessRedisModule;
 
 abstract class TerminalCommandProcessRedisApp extends TerminalCommandProcessAppBasic
 {
-    protected function createProcessModule(string $taskUUID, int $pid = null):TerminalProcessModule
+    protected function createProcessModule(string $taskUUID, ?int $pid = null):TerminalProcessModule
     {
         return new TerminalProcessRedisModule($taskUUID, $pid);
     }
