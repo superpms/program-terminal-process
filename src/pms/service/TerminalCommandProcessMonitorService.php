@@ -16,7 +16,7 @@ class TerminalCommandProcessMonitorService extends ServiceApp
 
     public static string $hookClass = TerminalLifecycleHook::class;
 
-    public static function entry($commandName, $argv, $bootOptions, $commandLIst, ReflectionClass $class, $obj): void
+    public static function entry($commandName, $argv, $commandLIst, ReflectionClass $class, $obj): void
 	{
         $needOutsideProcessMonitor = class_annotate_attrs($class, TerminalCommandProcessMonitor::class, true);
         if (!empty($needOutsideProcessMonitor)) {
