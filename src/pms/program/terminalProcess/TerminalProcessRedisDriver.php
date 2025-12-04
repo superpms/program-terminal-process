@@ -25,26 +25,29 @@ class TerminalProcessRedisDriver extends TerminalProcessDriverModule
         }
         $info = [];
         foreach ($processAddressAll as $processAddress) {
-            $tmp = RDb::get($processAddress);
-            if (empty($tmp)) {
+            $process = static::getProcess($processAddress);
+            if (empty($process)) {
                 continue;
             }
-            /**
-             * 还原进程容器
-             */
-            $process = TerminalProcessRedisModule::restore(json_decode($tmp, true));
             $key = $process->service_name;
             if (!isset($info[$key])) {
                 $info[$key] = [];
             }
-            $info[$key][] = $tmp;
+            $info[$key][] = $process;
         }
         return $info;
     }
 
     public static function getProcess(string $processAddress): mixed
     {
-        return RDb::get($processAddress);
+        $tmp = RDb::get(RDb::clearPrefix($processAddress));
+        if (empty($tmp)) {
+            return null;
+        }
+        /**
+         * 还原进程容器
+         */
+        return TerminalProcessRedisModule::restore(json_decode($tmp, true));
     }
 
     public static function active(string $processAddress, string $processInfo, int $keepAliveTime): bool
