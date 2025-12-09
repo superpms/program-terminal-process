@@ -7,6 +7,7 @@ use pms\app\TerminalCommandProcessRedisApp;
 
 class TerminalCommandProcessMonitorCommand extends TerminalCommandProcessRedisApp
 {
+    protected string $name = 'terminal-process-monitor';
     protected array $validate = [
         'p' => [
             'type' => COMMAND_ARGUMENT_TYPE,
