@@ -34,7 +34,7 @@ class TerminalCommandProcessMonitorCommand extends TerminalCommandProcessRedisAp
         $this->keepAliveInterval = $expired;
         $this->processStart($p);
 
-        $this->output::writeJsonArray([
+        $this->output::writeArray([
             "监听开始" => date("Y-m-d H:i:s", time()),
             "PID" => $p,
             "任务标识" => $u,
@@ -45,7 +45,7 @@ class TerminalCommandProcessMonitorCommand extends TerminalCommandProcessRedisAp
                 $this->heartbeat(6);
             } else {
                 $this->output::writeLn("-----");
-                $this->output::writeJsonArray([
+                $this->output::writeArray([
                     "监听结束" => date("Y-m-d H:i:s", time()),
                     "任务标识" => $u,
                     "监听进程死亡与" => $expired . "秒内"
