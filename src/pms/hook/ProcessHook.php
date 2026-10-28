@@ -2,6 +2,7 @@
 
 namespace pms\hook;
 
+use pms\app\ProcessCommandApp;
 use pms\contract\HookAppInterface;
 use ReflectionClass;
 
@@ -13,68 +14,45 @@ class ProcessHook implements HookAppInterface
     protected static array $container = [];
 
     /**
-     * 挂载进程包定义类，并同步挂载其命令类
-     * @param string $definitionClass 提供 definition(): array 的定义类
+     * 通过命令类默认属性注册进程，同时挂载终端命令。
+     * @param class-string<ProcessCommandApp> $commandClass 进程命令类
      */
-    public static function mount(string $definitionClass): bool
+    public static function mount(string $commandClass): bool
     {
-        if (!class_exists($definitionClass) || !method_exists($definitionClass, 'definition')) {
+        $commandClass = ltrim($commandClass, '\\');
+        if (!is_subclass_of($commandClass, ProcessCommandApp::class)) {
             return false;
         }
 
-        $definition = $definitionClass::definition();
-        if (!is_array($definition)) {
+        $reflection = new ReflectionClass($commandClass);
+        if ($reflection->isAbstract()) {
             return false;
         }
-
-        $uuid = trim((string)($definition['uuid'] ?? ''));
-        if ($uuid === '') {
-            return false;
-        }
-
-        foreach (['name', 'description', 'command', 'class'] as $field) {
-            if (trim((string)($definition[$field] ?? '')) === '') {
+        $properties = $reflection->getDefaultProperties();
+        foreach (['uuid', 'name', 'description', 'command', 'classify'] as $field) {
+            if (trim($properties[$field]) === '') {
                 return false;
             }
         }
-
-        $maxSize = (int)($definition['max_size'] ?? 0);
-        if ($maxSize < 1) {
+        if ($properties['maxSize'] < 1) {
+            return false;
+        }
+        if (!TerminalCommandHook::mount($commandClass)
+            && !in_array($commandClass, TerminalCommandHook::audit(), true)) {
             return false;
         }
 
-        $commandClass = ltrim((string)$definition['class'], '\\');
-        if (!class_exists($commandClass)) {
-            return false;
-        }
-
-        if (class_exists(TerminalCommandHook::class)) {
-            if (!TerminalCommandHook::mount($commandClass)) {
-                $commands = TerminalCommandHook::audit();
-                if (!in_array($commandClass, $commands, true)) {
-                    return false;
-                }
-            }
-        }
-
-        $sourcePath = '';
-        $reflection = new ReflectionClass($definitionClass);
-        $fileName = $reflection->getFileName();
-        if (is_string($fileName) && $fileName !== '') {
-            $sourcePath = dirname($fileName);
-        }
-
-        static::$container[$uuid] = [
-            'uuid' => $uuid,
-            'name' => (string)$definition['name'],
-            'description' => (string)$definition['description'],
-            'command' => trim((string)$definition['command']),
+        static::$container[$properties['uuid']] = [
+            'uuid' => $properties['uuid'],
+            'name' => $properties['name'],
+            'description' => $properties['description'],
+            'command' => $properties['command'],
             'class' => $commandClass,
-            'max_size' => $maxSize,
-            'definition_class' => $definitionClass,
-            'source_path' => $sourcePath,
-            'source_type' => static::sourceType($definitionClass),
-            'source_name' => static::sourceName($definitionClass),
+            'max_size' => $properties['maxSize'],
+            'classify' => $properties['classify'],
+            'source_path' => dirname($reflection->getFileName()),
+            'source_type' => static::sourceType($commandClass),
+            'source_name' => static::sourceName($commandClass),
         ];
         return true;
     }
@@ -113,35 +91,35 @@ class ProcessHook implements HookAppInterface
     }
 
     /**
-     * 根据定义类命名空间推导来源类型
+     * 根据命令类命名空间推导来源类型
      */
-    protected static function sourceType(string $definitionClass): string
+    protected static function sourceType(string $commandClass): string
     {
-        if (str_starts_with($definitionClass, 'kits\\')) {
+        if (str_starts_with($commandClass, 'kits\\')) {
             return 'kit';
         }
-        if (str_starts_with($definitionClass, 'app\\')) {
+        if (str_starts_with($commandClass, 'app\\')) {
             return 'module';
         }
-        if (str_starts_with($definitionClass, 'core\\')) {
+        if (str_starts_with($commandClass, 'core\\')) {
             return 'core';
         }
         return '';
     }
 
     /**
-     * 根据定义类命名空间推导来源名称
+     * 根据命令类命名空间推导来源名称
      */
-    protected static function sourceName(string $definitionClass): string
+    protected static function sourceName(string $commandClass): string
     {
-        $parts = explode('\\', $definitionClass);
-        if (str_starts_with($definitionClass, 'kits\\')) {
+        $parts = explode('\\', $commandClass);
+        if (str_starts_with($commandClass, 'kits\\')) {
             return trim(($parts[1] ?? '') . '/' . ($parts[2] ?? ''), '/');
         }
-        if (str_starts_with($definitionClass, 'app\\')) {
+        if (str_starts_with($commandClass, 'app\\')) {
             return (string)($parts[1] ?? '');
         }
-        if (str_starts_with($definitionClass, 'core\\')) {
+        if (str_starts_with($commandClass, 'core\\')) {
             return 'core';
         }
         return '';
